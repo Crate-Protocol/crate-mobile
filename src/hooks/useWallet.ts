@@ -1,13 +1,3 @@
-/**
- * useWallet.ts (mobile)
- * ──────────────────────
- * Stellar wallet state management for React Native.
- *
- * On mobile, Freighter isn't available as a browser extension.
- * This hook uses SecureStore to persist a generated or imported keypair
- * for testnet purposes. In production, integrate Lobstr or WalletConnect.
- */
-
 import { useState, useCallback } from "react";
 import * as SecureStore from "expo-secure-store";
 import { Keypair } from "@stellar/stellar-sdk";
