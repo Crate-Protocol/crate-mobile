@@ -18,9 +18,6 @@ export function useWallet(): WalletState {
   const [address, setAddress] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  /**
-   * Try to load an existing stored wallet.
-   */
   const connect = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -41,10 +38,6 @@ export function useWallet(): WalletState {
     setAddress(null);
   }, []);
 
-  /**
-   * Generate a new Stellar keypair and persist the secret.
-   * Returns the public key and secret (show secret to user once).
-   */
   const generateWallet = useCallback(async () => {
     const kp = Keypair.random();
     await SecureStore.setItemAsync(STORAGE_KEY, kp.secret());
@@ -52,9 +45,6 @@ export function useWallet(): WalletState {
     return { address: kp.publicKey(), secretKey: kp.secret() };
   }, []);
 
-  /**
-   * Import an existing Stellar secret key.
-   */
   const importWallet = useCallback(async (secretKey: string): Promise<string> => {
     const kp = Keypair.fromSecret(secretKey.trim());
     await SecureStore.setItemAsync(STORAGE_KEY, kp.secret());
