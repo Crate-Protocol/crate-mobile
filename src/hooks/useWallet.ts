@@ -22,12 +22,18 @@ export function useWallet(): WalletState {
     setIsLoading(true);
     try {
       const stored = await SecureStore.getItemAsync(STORAGE_KEY);
-      if (stored) {
-        const kp = Keypair.fromSecret(stored);
-        setAddress(kp.publicKey());
+      if (stored && /^S[A-Z2-7]{55}$/.test(stored)) {
+        try {
+          const kp = Keypair.fromSecret(stored);
+          setAddress(kp.publicKey());
+        } catch {
+          await SecureStore.deleteItemAsync(STORAGE_KEY);
+        }
+      } else if (stored) {
+        await SecureStore.deleteItemAsync(STORAGE_KEY);
       }
-    } catch (err) {
-      console.error("[useWallet] connect error:", err);
+    } catch {
+      // secure store unavailable
     } finally {
       setIsLoading(false);
     }
