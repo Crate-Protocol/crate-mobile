@@ -52,7 +52,11 @@ export function useWallet(): WalletState {
   }, []);
 
   const importWallet = useCallback(async (secretKey: string): Promise<string> => {
-    const kp = Keypair.fromSecret(secretKey.trim());
+    const trimmed = secretKey.trim();
+    if (!/^S[A-Z2-7]{55}$/.test(trimmed)) {
+      throw new Error("Invalid Stellar secret key");
+    }
+    const kp = Keypair.fromSecret(trimmed);
     await SecureStore.setItemAsync(STORAGE_KEY, kp.secret());
     setAddress(kp.publicKey());
     return kp.publicKey();
