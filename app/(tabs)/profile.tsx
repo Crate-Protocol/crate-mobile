@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -30,10 +30,11 @@ export default function ProfileTab() {
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
   const [newWalletSecret, setNewWalletSecret] = useState<string | null>(null);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     connect();
-  }, []);
+  }, [connect]);
 
   async function handleGenerate() {
     Alert.alert(
@@ -84,8 +85,12 @@ export default function ProfileTab() {
   async function copyAddress() {
     if (!address) return;
     await Clipboard.setStringAsync(address);
+    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    copyTimeoutRef.current = setTimeout(() => {
+      setCopied(false);
+      copyTimeoutRef.current = null;
+    }, 2000);
   }
 
   async function handleDisconnect() {
