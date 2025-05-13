@@ -179,9 +179,13 @@ export default function ProfileTab() {
     );
   }
 
+  const contractId = process.env.EXPO_PUBLIC_CONTRACT_ID as string | undefined;
+  const contractDisplay = contractId
+    ? `${contractId.slice(0, 8)}…${contractId.slice(-4)}`
+    : "Not configured";
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Address card */}
       <View style={styles.addressCard}>
         <View style={styles.addressHeader}>
           <View style={styles.connectedDot} />
@@ -194,7 +198,6 @@ export default function ProfileTab() {
         </TouchableOpacity>
       </View>
 
-      {/* Show new wallet secret once */}
       {newWalletSecret && (
         <View style={styles.secretBox}>
           <Text style={styles.secretWarning}>Save this secret key — it won't be shown again</Text>
@@ -213,10 +216,9 @@ export default function ProfileTab() {
         </View>
       )}
 
-      {/* Contract info */}
       <View style={styles.infoCard}>
         <Text style={styles.infoLabel}>CONTRACT</Text>
-        <Text style={styles.infoValue}>CA7DGEWW...DTLG</Text>
+        <Text style={styles.infoValue}>{contractDisplay}</Text>
         <View style={styles.infoDivider} />
         <Text style={styles.infoLabel}>REVENUE SPLIT</Text>
         <Text style={[styles.infoValue, { color: colors.accent }]}>90% Producers · 10% Platform</Text>
@@ -225,7 +227,6 @@ export default function ProfileTab() {
         <Text style={[styles.infoValue, { color: colors.success }]}>Under 5 seconds</Text>
       </View>
 
-      {/* Fund testnet wallet */}
       <TouchableOpacity
         style={styles.friendbotButton}
         onPress={() => {
@@ -240,7 +241,6 @@ export default function ProfileTab() {
         <Text style={styles.friendbotText}>Fund with Testnet XLM</Text>
       </TouchableOpacity>
 
-      {/* Disconnect */}
       <TouchableOpacity
         style={styles.disconnectButton}
         onPress={handleDisconnect}
