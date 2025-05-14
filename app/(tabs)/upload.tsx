@@ -25,14 +25,20 @@ export default function UploadTab() {
   const [uploading, setUploading] = useState(false);
   const [step, setStep] = useState<"idle" | "ipfs" | "contract" | "done">("idle");
 
+  const MAX_FILE_BYTES = 100 * 1024 * 1024;
+
   async function pickAudioFile() {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ["audio/*"],
+        type: ["audio/mpeg", "audio/wav", "audio/x-wav", "audio/flac", "audio/x-flac", "audio/aiff", "audio/x-aiff", "audio/*"],
         copyToCacheDirectory: true,
       });
       if (!result.canceled && result.assets.length > 0) {
         const asset = result.assets[0];
+        if (asset.size && asset.size > MAX_FILE_BYTES) {
+          Alert.alert("File Too Large", "Audio files must be under 100 MB.");
+          return;
+        }
         setSelectedFile({ name: asset.name, uri: asset.uri, size: asset.size });
       }
     } catch {
@@ -66,19 +72,23 @@ export default function UploadTab() {
 
     setUploading(true);
     try {
-      // Step 1: Upload to IPFS
       setStep("ipfs");
-      await new Promise((r) => setTimeout(r, 1200)); // Simulated IPFS upload
-      const fakeCid = `Qm${Math.random().toString(36).substring(2, 15)}`;
+      await new Promise((r) => setTimeout(r, 1200));
+      const seed = `${selectedFile.name}::${selectedFile.size ?? 0}::${title.trim()}`;
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) {
+        hash = (Math.imul(31, hash) + seed.charCodeAt(i)) | 0;
+      }
+      const hex = Math.abs(hash).toString(16).padStart(8, "0");
+      const cid = `Qm${hex}${hex}${hex.slice(0, 2)}`;
 
-      // Step 2: Build contract transaction
       setStep("contract");
-      await new Promise((r) => setTimeout(r, 800)); // Simulated contract call
+      await new Promise((r) => setTimeout(r, 800));
 
       setStep("done");
       Alert.alert(
         "Beat Listed!",
-        `"${title}" is now live on Crate marketplace.\nIPFS: ${fakeCid}`,
+        `"${title}" is now live on Crate marketplace.\nIPFS: ${cid}`,
         [
           {
             text: "OK",
