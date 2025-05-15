@@ -55,16 +55,21 @@ export default function UploadTab() {
       Alert.alert("No File", "Please select an audio file first.");
       return;
     }
-    if (!title.trim()) {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
       Alert.alert("Missing Title", "Please enter a beat title.");
       return;
     }
-    const price = parseFloat(priceXlm);
+    if (trimmedTitle.length > 100) {
+      Alert.alert("Title Too Long", "Beat title must be 100 characters or fewer.");
+      return;
+    }
+    const price = parseFloat(priceXlm.trim());
     if (!price || price <= 0) {
       Alert.alert("Invalid Price", "Enter a price greater than 0 XLM.");
       return;
     }
-    const bpmNum = parseInt(bpm);
+    const bpmNum = parseInt(bpm.trim(), 10);
     if (!bpmNum || bpmNum < 40 || bpmNum > 300) {
       Alert.alert("Invalid BPM", "BPM must be between 40 and 300.");
       return;
@@ -88,7 +93,7 @@ export default function UploadTab() {
       setStep("done");
       Alert.alert(
         "Beat Listed!",
-        `"${title}" is now live on Crate marketplace.\nIPFS: ${cid}`,
+        `"${trimmedTitle}" is now live on Crate marketplace.\nIPFS: ${cid}`,
         [
           {
             text: "OK",
