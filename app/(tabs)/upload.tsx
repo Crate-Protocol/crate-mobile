@@ -133,7 +133,6 @@ export default function UploadTab() {
         </View>
       )}
 
-      {/* File picker */}
       <TouchableOpacity style={styles.filePicker} onPress={pickAudioFile} activeOpacity={0.7}>
         {selectedFile ? (
           <View style={{ alignItems: "center" }}>
@@ -154,7 +153,6 @@ export default function UploadTab() {
         )}
       </TouchableOpacity>
 
-      {/* Form */}
       <View style={styles.form}>
         <View style={styles.field}>
           <Text style={styles.label}>Beat Title *</Text>
@@ -192,7 +190,6 @@ export default function UploadTab() {
           </View>
         </View>
 
-        {/* Genre selector */}
         <View style={styles.field}>
           <Text style={styles.label}>Genre *</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.genreScroll}>
@@ -210,7 +207,6 @@ export default function UploadTab() {
           </ScrollView>
         </View>
 
-        {/* Revenue split preview */}
         {producerEarning && (
           <View style={styles.splitBox}>
             <View style={styles.splitRow}>
@@ -226,7 +222,6 @@ export default function UploadTab() {
           </View>
         )}
 
-        {/* Progress */}
         {uploading && (
           <View style={styles.progressBox}>
             <ActivityIndicator size="small" color={colors.accent} />
