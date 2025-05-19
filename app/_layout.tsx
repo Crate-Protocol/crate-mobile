@@ -1,18 +1,20 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { View, StyleSheet } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { colors } from "../src/constants/theme";
 
-// Prevent splash screen from auto-hiding
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  const [ready, setReady] = useState(false);
+
   useEffect(() => {
-    // Hide splash once layout mounts
-    SplashScreen.hideAsync();
+    SplashScreen.hideAsync().finally(() => setReady(true));
   }, []);
+
+  if (!ready) return null;
 
   return (
     <View style={styles.root}>
