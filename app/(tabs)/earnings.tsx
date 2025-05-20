@@ -1,18 +1,45 @@
-import { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, Alert } from "react-native";
+import { useState, useCallback } from "react";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, RefreshControl, ActivityIndicator, Alert } from "react-native";
 import { useWallet } from "../../src/hooks/useWallet";
 
-const MOCK_HISTORY = [
+interface Transaction {
+  id: string;
+  type: "sale" | "withdraw";
+  amount: string;
+  beat: string;
+  date: string;
+}
+
+const MOCK_HISTORY: Transaction[] = [
   { id: "tx1", type: "sale",     amount: "+22.5 XLM", beat: "Midnight Waves", date: "May 10" },
   { id: "tx2", type: "sale",     amount: "+18.0 XLM", beat: "Block Pressure", date: "May 8"  },
-  { id: "tx3", type: "withdraw", amount: "-40.5 XLM", beat: "Withdrawal",     date: "May 7"  },
+  { id: "tx3", type: "withdraw", amount: "-40.5 XLM", beat: "Withdrawal",     date: "May 8"  },
   { id: "tx4", type: "sale",     amount: "+27.0 XLM", beat: "Lagos Summer",   date: "May 3"  },
 ];
 
+function groupByDate(txs: Transaction[]): { date: string; items: Transaction[] }[] {
+  const map = new Map<string, Transaction[]>();
+  for (const tx of txs) {
+    if (!map.has(tx.date)) map.set(tx.date, []);
+    map.get(tx.date)!.push(tx);
+  }
+  return Array.from(map.entries()).map(([date, items]) => ({ date, items }));
+}
+
 export default function Earnings() {
   const { address, balance, refreshBalance } = useWallet();
-  const [withdrawing, setWithdrawing] = useState(false);
+  const [withdrawing, setWithdrawing]   = useState(false);
   const [withdrawError, setWithdrawError] = useState<string | null>(null);
+  const [refreshing, setRefreshing]     = useState(false);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refreshBalance();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshBalance]);
 
   async function handleWithdraw() {
     if (!address) return;
@@ -27,15 +54,25 @@ export default function Earnings() {
       await refreshBalance();
       Alert.alert("Withdrawal Submitted", "Your withdrawal transaction has been sent.");
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Withdrawal failed";
-      setWithdrawError(msg);
+      setWithdrawError(err instanceof Error ? err.message : "Withdrawal failed");
     } finally {
       setWithdrawing(false);
     }
   }
 
+  const groups = groupByDate(MOCK_HISTORY);
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor="#facc15"
+        />
+      }
+    >
       <Text style={styles.heading}>Earnings</Text>
 
       <View style={styles.card}>
@@ -62,20 +99,25 @@ export default function Earnings() {
       </View>
 
       <Text style={styles.sectionTitle}>Transaction history</Text>
-      {MOCK_HISTORY.length === 0 ? (
+      {groups.length === 0 ? (
         <View style={styles.emptyHistory}>
           <Text style={styles.emptyHistoryText}>No transactions yet</Text>
         </View>
       ) : (
-        MOCK_HISTORY.map(tx => (
-          <View key={tx.id} style={styles.row}>
-            <View>
-              <Text style={styles.rowBeat}>{tx.beat}</Text>
-              <Text style={styles.rowDate}>{tx.date}</Text>
-            </View>
-            <Text style={[styles.rowAmount, tx.type === "sale" ? styles.sale : styles.withdraw]}>
-              {tx.amount}
-            </Text>
+        groups.map(group => (
+          <View key={group.date}>
+            <Text style={styles.dateHeader}>{group.date}</Text>
+            {group.items.map(tx => (
+              <View key={tx.id} style={styles.row}>
+                <View>
+                  <Text style={styles.rowBeat}>{tx.beat}</Text>
+                  <Text style={styles.rowType}>{tx.type === "sale" ? "Sale" : "Withdrawal"}</Text>
+                </View>
+                <Text style={[styles.rowAmount, tx.type === "sale" ? styles.sale : styles.withdraw]}>
+                  {tx.amount}
+                </Text>
+              </View>
+            ))}
           </View>
         ))
       )}
@@ -94,9 +136,10 @@ const styles = StyleSheet.create({
   btnDisabled:      { opacity: 0.4 },
   btnText:          { fontSize: 15, fontWeight: "700", color: "#000" },
   sectionTitle:     { fontSize: 16, fontWeight: "700", color: "#fff", marginBottom: 12 },
+  dateHeader:       { fontSize: 11, fontWeight: "700", color: "#525252", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 12, marginBottom: 6 },
   row:              { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 14, backgroundColor: "#111", borderRadius: 12, marginBottom: 8 },
   rowBeat:          { fontSize: 14, fontWeight: "600", color: "#fff" },
-  rowDate:          { fontSize: 12, color: "#525252", marginTop: 2 },
+  rowType:          { fontSize: 12, color: "#525252", marginTop: 2 },
   rowAmount:        { fontSize: 14, fontWeight: "700" },
   sale:             { color: "#facc15" },
   withdraw:         { color: "#737373" },
