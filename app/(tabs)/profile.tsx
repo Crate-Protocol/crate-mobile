@@ -16,12 +16,14 @@ import { colors, spacing, radius, typography } from "../../src/constants/theme";
 export default function ProfileTab() {
   const {
     address,
+    balance,
     isConnected,
     isLoading,
     connect,
     disconnect,
     generateWallet,
     importWallet,
+    refreshBalance,
   } = useWallet();
 
   const [importSecret, setImportSecret] = useState("");
@@ -193,6 +195,13 @@ export default function ProfileTab() {
           <Text style={styles.networkBadge}>Testnet</Text>
         </View>
         <Text style={styles.address}>{address}</Text>
+        <View style={styles.balanceRow}>
+          <Text style={styles.balanceLabel}>Balance</Text>
+          <Text style={styles.balanceValue}>{balance} XLM</Text>
+          <TouchableOpacity onPress={refreshBalance} style={styles.refreshBtn}>
+            <Text style={styles.refreshBtnText}>↻</Text>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity style={styles.copyButton} onPress={copyAddress}>
           <Text style={styles.copyButtonText}>{copied ? "Copied!" : "Copy Address"}</Text>
         </TouchableOpacity>
@@ -322,6 +331,20 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   address: { color: colors.textPrimary, fontSize: 11, fontFamily: "monospace", marginBottom: spacing.md, lineHeight: 16 },
+  balanceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+    backgroundColor: colors.surface2,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+  },
+  balanceLabel: { color: colors.textMuted, fontSize: typography.fontSizeXS, flex: 1 },
+  balanceValue: { color: colors.accent, fontSize: typography.fontSizeMD, fontWeight: typography.fontWeightBold },
+  refreshBtn:     { padding: 4 },
+  refreshBtnText: { color: colors.textMuted, fontSize: 16 },
   copyButton: {
     borderWidth: 1,
     borderColor: colors.border,
