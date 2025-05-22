@@ -137,10 +137,14 @@ export default function UploadTab() {
         {selectedFile ? (
           <View style={{ alignItems: "center" }}>
             <Text style={styles.filePickerIcon}>🎵</Text>
-            <Text style={styles.filePickerFileName}>{selectedFile.name}</Text>
-            {selectedFile.size && (
+            <Text style={styles.filePickerFileName} numberOfLines={1} ellipsizeMode="middle">
+              {selectedFile.name.length > 40
+                ? selectedFile.name.replace(/^(.{20}).*(.{10})$/, "$1…$2")
+                : selectedFile.name}
+            </Text>
+            {selectedFile.size != null && (
               <Text style={styles.filePickerMeta}>
-                {(selectedFile.size / 1024 / 1024).toFixed(1)} MB
+                {(selectedFile.size / 1024 / 1024).toFixed(1)} MB · Tap to change
               </Text>
             )}
           </View>
@@ -234,11 +238,14 @@ export default function UploadTab() {
         <TouchableOpacity
           style={[
             styles.submitButton,
-            (uploading || !selectedFile) && styles.submitButtonDisabled,
+            (uploading || !selectedFile || !isConnected) && styles.submitButtonDisabled,
           ]}
           onPress={handleUpload}
-          disabled={uploading || !selectedFile}
+          disabled={uploading || !selectedFile || !isConnected}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="List beat on marketplace"
+          accessibilityState={{ disabled: uploading || !selectedFile || !isConnected }}
         >
           <Text style={styles.submitButtonText}>
             {uploading ? "Uploading..." : "List Beat on Marketplace"}
