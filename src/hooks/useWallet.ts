@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import * as SecureStore from "expo-secure-store";
 import { Keypair, Horizon } from "@stellar/stellar-sdk";
 
@@ -23,15 +23,18 @@ export function useWallet(): WalletState {
   const [address, setAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState("0.00");
   const [isLoading, setIsLoading] = useState(false);
+  const fetchSeqRef = useRef(0);
 
   const fetchBalance = useCallback(async (addr: string) => {
+    const seq = ++fetchSeqRef.current;
     try {
       const server = new Horizon.Server(HORIZON_URL);
       const account = await server.loadAccount(addr);
+      if (seq !== fetchSeqRef.current) return;
       const native = account.balances.find((b) => b.asset_type === "native");
       setBalance(native ? parseFloat(native.balance).toFixed(2) : "0.00");
     } catch {
-      setBalance("0.00");
+      if (seq === fetchSeqRef.current) setBalance("0.00");
     }
   }, []);
 
@@ -59,6 +62,7 @@ export function useWallet(): WalletState {
   }, [fetchBalance]);
 
   const disconnect = useCallback(async () => {
+    fetchSeqRef.current++;
     await SecureStore.deleteItemAsync(STORAGE_KEY);
     setAddress(null);
     setBalance("0.00");
