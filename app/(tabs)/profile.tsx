@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
   ActivityIndicator,
 } from "react-native";
@@ -31,6 +33,7 @@ export default function ProfileTab() {
   const [importing, setImporting] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [secretVisible, setSecretVisible] = useState(false);
   const [newWalletSecret, setNewWalletSecret] = useState<string | null>(null);
   const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -120,6 +123,10 @@ export default function ProfileTab() {
 
   if (!isConnected) {
     return (
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.logoSection}>
           <Text style={styles.logo}>◈ Crate</Text>
@@ -150,15 +157,23 @@ export default function ProfileTab() {
         {showImport && (
           <View style={styles.importBox}>
             <Text style={styles.importLabel}>Enter your Stellar secret key (S...)</Text>
-            <TextInput
-              style={[styles.input, styles.secretInput]}
-              placeholder="SXXXXXX..."
-              placeholderTextColor={colors.textMuted}
-              value={importSecret}
-              onChangeText={setImportSecret}
-              secureTextEntry
-              autoCapitalize="characters"
-            />
+            <View style={{ position: "relative" }}>
+              <TextInput
+                style={[styles.input, styles.secretInput]}
+                placeholder="SXXXXXX..."
+                placeholderTextColor={colors.textMuted}
+                value={importSecret}
+                onChangeText={setImportSecret}
+                secureTextEntry={!secretVisible}
+                autoCapitalize="characters"
+              />
+              <TouchableOpacity
+                style={styles.toggleVisibility}
+                onPress={() => setSecretVisible(v => !v)}
+              >
+                <Text style={styles.toggleVisibilityText}>{secretVisible ? "Hide" : "Show"}</Text>
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity
               style={[styles.primaryButton, { marginTop: 12 }]}
               onPress={handleImport}
@@ -178,6 +193,7 @@ export default function ProfileTab() {
           For testnet use only. Never use real funds on testnet.
         </Text>
       </ScrollView>
+      </KeyboardAvoidingView>
     );
   }
 
@@ -305,7 +321,9 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontSize: typography.fontSizeSM,
   },
-  secretInput: { fontFamily: "monospace" },
+  secretInput: { fontFamily: "monospace", paddingRight: 56 },
+  toggleVisibility: { position: "absolute", right: spacing.md, top: 0, bottom: 0, justifyContent: "center" },
+  toggleVisibilityText: { color: colors.accent, fontSize: typography.fontSizeXS, fontWeight: typography.fontWeightSemibold },
   disclaimer: { color: colors.textMuted, fontSize: typography.fontSizeXS, textAlign: "center", marginTop: spacing.xl, lineHeight: 18 },
   addressCard: {
     backgroundColor: colors.surface,
