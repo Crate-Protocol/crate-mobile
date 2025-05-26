@@ -93,10 +93,10 @@ export default function UploadTab() {
       setStep("done");
       Alert.alert(
         "Beat Listed!",
-        `"${trimmedTitle}" is now live on Crate marketplace.\nIPFS: ${cid}`,
+        `"${trimmedTitle}" is now live on Crate marketplace.\nCID: ${cid}`,
         [
           {
-            text: "OK",
+            text: "Upload Another",
             onPress: () => {
               setTitle("");
               setPriceXlm("");
@@ -104,6 +104,11 @@ export default function UploadTab() {
               setSelectedFile(null);
               setStep("idle");
             },
+          },
+          {
+            text: "Done",
+            style: "cancel",
+            onPress: () => setStep("idle"),
           },
         ]
       );
