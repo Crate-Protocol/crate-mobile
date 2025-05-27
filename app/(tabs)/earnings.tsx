@@ -109,8 +109,11 @@ export default function Earnings() {
             <Text style={styles.dateHeader}>{group.date}</Text>
             {group.items.map(tx => (
               <View key={tx.id} style={styles.row}>
-                <View>
-                  <Text style={styles.rowBeat}>{tx.beat}</Text>
+                <View style={styles.rowIcon}>
+                  <Text style={styles.rowIconText}>{tx.type === "sale" ? "↗" : "↙"}</Text>
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.rowBeat} numberOfLines={1}>{tx.beat}</Text>
                   <Text style={styles.rowType}>{tx.type === "sale" ? "Sale" : "Withdrawal"}</Text>
                 </View>
                 <Text style={[styles.rowAmount, tx.type === "sale" ? styles.sale : styles.withdraw]}>
@@ -138,6 +141,8 @@ const styles = StyleSheet.create({
   sectionTitle:     { fontSize: 16, fontWeight: "700", color: "#fff", marginBottom: 12 },
   dateHeader:       { fontSize: 11, fontWeight: "700", color: "#525252", textTransform: "uppercase", letterSpacing: 0.6, marginTop: 12, marginBottom: 6 },
   row:              { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 14, backgroundColor: "#111", borderRadius: 12, marginBottom: 8 },
+  rowIcon:          { width: 32, height: 32, borderRadius: 8, backgroundColor: "#1a1a1a", alignItems: "center", justifyContent: "center", marginRight: 10 },
+  rowIconText:      { fontSize: 14, color: "#a3a3a3" },
   rowBeat:          { fontSize: 14, fontWeight: "600", color: "#fff" },
   rowType:          { fontSize: 12, color: "#525252", marginTop: 2 },
   rowAmount:        { fontSize: 14, fontWeight: "700" },
