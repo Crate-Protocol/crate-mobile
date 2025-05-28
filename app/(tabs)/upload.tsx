@@ -5,6 +5,8 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Alert,
   ActivityIndicator,
@@ -120,11 +122,19 @@ export default function UploadTab() {
     }
   }
 
-  const producerEarning = priceXlm && parseFloat(priceXlm) > 0
-    ? (parseFloat(priceXlm) * 0.9).toFixed(2)
+  const parsedPrice = parseFloat(priceXlm.trim());
+  const producerEarning = parsedPrice > 0
+    ? (Math.round(parsedPrice * 0.9 * 100) / 100).toFixed(2)
+    : null;
+  const platformFee = parsedPrice > 0
+    ? (Math.round(parsedPrice * 0.1 * 100) / 100).toFixed(2)
     : null;
 
   return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
@@ -224,9 +234,7 @@ export default function UploadTab() {
             </View>
             <View style={styles.splitRow}>
               <Text style={styles.splitLabel}>Platform fee (10%)</Text>
-              <Text style={styles.splitMuted}>
-                {(parseFloat(priceXlm) * 0.1).toFixed(2)} XLM
-              </Text>
+              <Text style={styles.splitMuted}>{platformFee} XLM</Text>
             </View>
           </View>
         )}
@@ -258,6 +266,7 @@ export default function UploadTab() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
