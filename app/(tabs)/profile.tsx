@@ -51,15 +51,12 @@ export default function ProfileTab() {
           text: "Generate",
           onPress: async () => {
             setGenerating(true);
+            setNewWalletSecret(null);
             try {
               const result = await generateWallet();
               setNewWalletSecret(result.secretKey);
-              Alert.alert(
-                "Wallet Created",
-                `Address: ${result.address}\n\nSave your secret key (shown below). This is your only chance.`
-              );
             } catch {
-              Alert.alert("Error", "Failed to generate wallet");
+              Alert.alert("Error", "Failed to generate wallet. Please try again.");
             } finally {
               setGenerating(false);
             }
@@ -89,13 +86,17 @@ export default function ProfileTab() {
 
   async function copyAddress() {
     if (!address) return;
-    await Clipboard.setStringAsync(address);
-    if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
-    setCopied(true);
-    copyTimeoutRef.current = setTimeout(() => {
-      setCopied(false);
-      copyTimeoutRef.current = null;
-    }, 2000);
+    try {
+      await Clipboard.setStringAsync(address);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      setCopied(true);
+      copyTimeoutRef.current = setTimeout(() => {
+        setCopied(false);
+        copyTimeoutRef.current = null;
+      }, 2000);
+    } catch {
+      Alert.alert("Address", address, [{ text: "Close" }]);
+    }
   }
 
   async function handleDisconnect() {
