@@ -46,3 +46,5 @@ export const typography = {
   fontWeightBold: "700" as const,
   fontWeightExtrabold: "800" as const,
 };
+
+// 1: feat: scaffold Expo 53 project with Expo Router an
