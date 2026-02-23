@@ -48,3 +48,5 @@ export const typography = {
 };
 
 // 1: feat: scaffold Expo 53 project with Expo Router an
+
+// 2: feat: set up bottom tab navigation with four scree
