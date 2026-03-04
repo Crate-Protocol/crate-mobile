@@ -52,3 +52,5 @@ export const typography = {
 // 2: feat: set up bottom tab navigation with four scree
 
 // 3: feat: implement dark theme tokens matching web app
+
+// 4: feat: build Discover feed with SampleCard componen
