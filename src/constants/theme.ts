@@ -54,3 +54,5 @@ export const typography = {
 // 3: feat: implement dark theme tokens matching web app
 
 // 4: feat: build Discover feed with SampleCard componen
+
+// 5: feat: implement wallet keypair generation with sec
