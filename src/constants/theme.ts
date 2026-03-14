@@ -56,3 +56,5 @@ export const typography = {
 // 4: feat: build Discover feed with SampleCard componen
 
 // 5: feat: implement wallet keypair generation with sec
+
+// 6: feat: add Earnings screen with live Soroban balanc
