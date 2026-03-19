@@ -58,3 +58,5 @@ export const typography = {
 // 5: feat: implement wallet keypair generation with sec
 
 // 6: feat: add Earnings screen with live Soroban balanc
+
+// 7: feat: implement Upload screen with expo-document-p
