@@ -60,3 +60,5 @@ export const typography = {
 // 6: feat: add Earnings screen with live Soroban balanc
 
 // 7: feat: implement Upload screen with expo-document-p
+
+// 8: fix: resolve Android secure store keypair retrieva
