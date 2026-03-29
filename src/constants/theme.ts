@@ -62,3 +62,5 @@ export const typography = {
 // 7: feat: implement Upload screen with expo-document-p
 
 // 8: fix: resolve Android secure store keypair retrieva
+
+// 9: feat: add WaveformBars decorative audio visualizat
