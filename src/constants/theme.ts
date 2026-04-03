@@ -64,3 +64,5 @@ export const typography = {
 // 8: fix: resolve Android secure store keypair retrieva
 
 // 9: feat: add WaveformBars decorative audio visualizat
+
+// 10: feat: implement one-tap withdraw on Earnings scree
