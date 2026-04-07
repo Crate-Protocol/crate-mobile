@@ -66,3 +66,5 @@ export const typography = {
 // 9: feat: add WaveformBars decorative audio visualizat
 
 // 10: feat: implement one-tap withdraw on Earnings scree
+
+// 11: feat: add push notification on beat sale via expo-
