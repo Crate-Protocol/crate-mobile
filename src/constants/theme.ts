@@ -68,3 +68,5 @@ export const typography = {
 // 10: feat: implement one-tap withdraw on Earnings scree
 
 // 11: feat: add push notification on beat sale via expo-
+
+// 12: fix: handle expired Stellar keypair session on app
