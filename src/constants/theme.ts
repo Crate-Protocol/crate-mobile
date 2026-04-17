@@ -70,3 +70,5 @@ export const typography = {
 // 11: feat: add push notification on beat sale via expo-
 
 // 12: fix: handle expired Stellar keypair session on app
+
+// 13: feat: add genre and BPM filter chips to Discover s
