@@ -72,3 +72,5 @@ export const typography = {
 // 12: fix: handle expired Stellar keypair session on app
 
 // 13: feat: add genre and BPM filter chips to Discover s
+
+// 14: feat: implement Profile screen with listed beats a
