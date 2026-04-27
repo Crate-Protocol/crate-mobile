@@ -74,3 +74,5 @@ export const typography = {
 // 13: feat: add genre and BPM filter chips to Discover s
 
 // 14: feat: implement Profile screen with listed beats a
+
+// 15: fix: correct XLM balance display on low-digit amou
