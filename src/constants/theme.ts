@@ -80,3 +80,5 @@ export const typography = {
 // 16: feat: add 30-second beat preview with expo-av
 
 // 17: refactor: extract reusable PriceTag component
+
+// 18: feat: add haptic feedback on purchase confirmation
