@@ -82,3 +82,5 @@ export const typography = {
 // 17: refactor: extract reusable PriceTag component
 
 // 18: feat: add haptic feedback on purchase confirmation
+
+// 19: fix: resolve iOS safe area insets on notch devices
