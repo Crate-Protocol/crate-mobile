@@ -84,3 +84,5 @@ export const typography = {
 // 18: feat: add haptic feedback on purchase confirmation
 
 // 19: fix: resolve iOS safe area insets on notch devices
+
+// 20: chore: update README, app.json scheme, and .env.ex
