@@ -115,7 +115,7 @@ export default function ProfileTab() {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.logoSection}>
-          <Text style={styles.logo}>◈ Sampled</Text>
+          <Text style={styles.logo}>◈ Crate</Text>
           <Text style={styles.logoSub}>Peer-to-peer beat marketplace on Stellar</Text>
         </View>
 

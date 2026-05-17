@@ -1,5 +1,5 @@
 /**
- * Sampled Mobile — Design Tokens
+ * Crate Mobile — Design Tokens
  * Matches the web design system exactly.
  */
 

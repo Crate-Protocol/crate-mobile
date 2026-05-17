@@ -78,7 +78,7 @@ export default function UploadTab() {
       setStep("done");
       Alert.alert(
         "Beat Listed!",
-        `"${title}" is now live on Sampled marketplace.\nIPFS: ${fakeCid}`,
+        `"${title}" is now live on Crate marketplace.\nIPFS: ${fakeCid}`,
         [
           {
             text: "OK",

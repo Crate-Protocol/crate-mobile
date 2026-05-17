@@ -1,6 +1,6 @@
-# sampled-mobile
+# crate-mobile
 
-React Native + Expo mobile app for the Sampled P2P beat marketplace.
+React Native + Expo mobile app for the Crate P2P beat marketplace.
 
 ## Stack
 

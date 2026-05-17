@@ -12,7 +12,7 @@ import { useState, useCallback } from "react";
 import * as SecureStore from "expo-secure-store";
 import { Keypair } from "@stellar/stellar-sdk";
 
-const STORAGE_KEY = "sampled_wallet_secret";
+const STORAGE_KEY = "crate_wallet_secret";
 
 export interface WalletState {
   address: string | null;

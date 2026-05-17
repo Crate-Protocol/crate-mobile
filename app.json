@@ -1,9 +1,9 @@
 {
   "expo": {
-    "name": "Sampled",
-    "slug": "sampled",
+    "name": "Crate",
+    "slug": "crate",
     "version": "0.1.0",
-    "scheme": "sampled",
+    "scheme": "crate",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
@@ -15,14 +15,14 @@
     "backgroundColor": "#0a0a0a",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.brightpixel.sampled"
+      "bundleIdentifier": "com.brightpixel.crate"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0a0a0a"
       },
-      "package": "com.brightpixel.sampled"
+      "package": "com.brightpixel.crate"
     },
     "web": {
       "bundler": "metro",

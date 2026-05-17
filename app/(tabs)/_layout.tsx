@@ -32,7 +32,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="musical-notes" size={size} color={color} />
           ),
-          headerTitle: "◈ Sampled",
+          headerTitle: "◈ Crate",
           headerTitleStyle: { fontWeight: "800", fontSize: 18, color: colors.textPrimary },
         }}
       />
