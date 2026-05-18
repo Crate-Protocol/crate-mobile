@@ -1,198 +1,60 @@
-import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
-import { colors, radius, spacing, typography } from "../constants/theme";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 
-export interface SampleItem {
+interface Props {
   id: string;
   title: string;
+  producer: string;
   genre: string;
   bpm: number;
-  priceXlm: number;
-  salesCount: number;
-  uploader: string;
-  active: boolean;
+  leasePrice: number;
+  onBuy?: (id: string) => void;
 }
 
-interface SampleCardProps {
-  sample: SampleItem;
-  onBuy?: (sample: SampleItem) => void;
-  onPress?: (sample: SampleItem) => void;
-  buying?: boolean;
-}
-
-export default function SampleCard({
-  sample,
-  onBuy,
-  onPress,
-  buying = false,
-}: SampleCardProps) {
-  const shortAddr = `${sample.uploader.slice(0, 8)}...${sample.uploader.slice(-4)}`;
+export function SampleCard({ id, title, producer, genre, bpm, leasePrice, onBuy }: Props) {
+  const BARS = [35, 60, 45, 75, 40, 65, 50, 70, 38, 62, 48, 72];
 
   return (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={() => onPress?.(sample)}
-      activeOpacity={0.8}
-    >
-      {/* Beat art */}
-      <View style={styles.artContainer}>
-        {/* Waveform bars decorative */}
-        <View style={styles.waveform}>
-          {[20, 35, 15, 45, 30, 50, 25, 40, 20, 35].map((h, i) => (
-            <View
-              key={i}
-              style={[styles.waveBar, { height: h }]}
-            />
-          ))}
-        </View>
-        {/* Genre badge */}
-        <View style={styles.genreBadge}>
-          <Text style={styles.genreText}>{sample.genre}</Text>
-        </View>
+    <View style={styles.card}>
+      {/* Waveform */}
+      <View style={styles.wave}>
+        {BARS.map((h, i) => (
+          <View key={i} style={[styles.bar, { height: h * 0.5 }]} />
+        ))}
       </View>
 
-      {/* Info */}
-      <View style={styles.info}>
-        <View style={styles.infoRow}>
+      <View style={styles.body}>
+        <View style={styles.row}>
           <View style={{ flex: 1 }}>
-            <Text style={styles.title} numberOfLines={1}>
-              {sample.title}
-            </Text>
-            <Text style={styles.address}>{shortAddr}</Text>
+            <Text style={styles.title}>{title}</Text>
+            <Text style={styles.producer}>{producer}</Text>
           </View>
-          <Text style={styles.price}>{sample.priceXlm} XLM</Text>
+          <View style={styles.badges}>
+            <View style={styles.badge}><Text style={styles.badgeText}>{genre}</Text></View>
+            <View style={[styles.badge, { backgroundColor: "#1a1a1a" }]}>
+              <Text style={[styles.badgeText, { color: "#525252" }]}>{bpm} BPM</Text>
+            </View>
+          </View>
         </View>
 
-        <View style={styles.meta}>
-          <Text style={styles.metaText}>{sample.bpm} BPM</Text>
-          <Text style={styles.metaDot}>·</Text>
-          <Text style={styles.metaText}>{sample.salesCount} sales</Text>
-        </View>
-
-        <TouchableOpacity
-          style={[styles.buyButton, (!sample.active || buying) && styles.buyButtonDisabled]}
-          onPress={() => onBuy?.(sample)}
-          disabled={!sample.active || buying}
-          activeOpacity={0.8}
-        >
-          {buying ? (
-            <ActivityIndicator size="small" color="#000" />
-          ) : (
-            <Text style={styles.buyButtonText}>
-              {sample.active ? "Buy" : "Unavailable"}
-            </Text>
-          )}
+        <TouchableOpacity style={styles.btn} onPress={() => onBuy?.(id)}>
+          <Text style={styles.btnText}>Lease — {leasePrice} XLM</Text>
         </TouchableOpacity>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    marginBottom: spacing.md,
-    overflow: "hidden",
-  },
-  artContainer: {
-    height: 100,
-    backgroundColor: colors.surface2,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  waveform: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-    opacity: 0.35,
-  },
-  waveBar: {
-    width: 3,
-    backgroundColor: colors.accent,
-    borderRadius: 2,
-  },
-  genreBadge: {
-    position: "absolute",
-    top: 8,
-    left: 10,
-    backgroundColor: "rgba(250, 204, 21, 0.15)",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: radius.full,
-    borderWidth: 1,
-    borderColor: "rgba(250, 204, 21, 0.3)",
-  },
-  genreText: {
-    color: colors.accent,
-    fontSize: typography.fontSizeXS,
-    fontWeight: typography.fontWeightBold,
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  info: {
-    padding: spacing.md,
-  },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: spacing.xs,
-  },
-  title: {
-    color: colors.textPrimary,
-    fontSize: typography.fontSizeMD,
-    fontWeight: typography.fontWeightSemibold,
-    marginBottom: 2,
-  },
-  address: {
-    color: colors.textMuted,
-    fontSize: typography.fontSizeXS,
-    fontFamily: "monospace",
-  },
-  price: {
-    color: colors.accent,
-    fontSize: 16,
-    fontWeight: typography.fontWeightBold,
-    marginLeft: spacing.sm,
-  },
-  meta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.xs,
-    marginBottom: spacing.md,
-  },
-  metaText: {
-    color: colors.textMuted,
-    fontSize: typography.fontSizeXS,
-  },
-  metaDot: {
-    color: colors.textMuted,
-    fontSize: typography.fontSizeXS,
-  },
-  buyButton: {
-    backgroundColor: colors.accent,
-    paddingVertical: 10,
-    borderRadius: radius.md,
-    alignItems: "center",
-  },
-  buyButtonDisabled: {
-    opacity: 0.4,
-  },
-  buyButtonText: {
-    color: "#000",
-    fontWeight: typography.fontWeightBold,
-    fontSize: typography.fontSizeSM,
-  },
+  card:       { backgroundColor: "#111", borderRadius: 20, overflow: "hidden", marginBottom: 12, borderWidth: 1, borderColor: "#1a1a1a" },
+  wave:       { backgroundColor: "#0a0a0a", height: 64, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 3, paddingHorizontal: 16 },
+  bar:        { width: 3, backgroundColor: "#facc15", borderRadius: 2, opacity: 0.8 },
+  body:       { padding: 14 },
+  row:        { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 },
+  title:      { fontSize: 15, fontWeight: "700", color: "#fff" },
+  producer:   { fontSize: 11, color: "#525252", fontFamily: "monospace", marginTop: 3 },
+  badges:     { flexDirection: "row", gap: 6 },
+  badge:      { backgroundColor: "rgba(250,204,21,0.1)", borderRadius: 999, paddingHorizontal: 10, paddingVertical: 4 },
+  badgeText:  { fontSize: 10, fontWeight: "700", color: "#facc15" },
+  btn:        { backgroundColor: "#facc15", borderRadius: 12, padding: 12, alignItems: "center" },
+  btnText:    { fontSize: 14, fontWeight: "700", color: "#000" },
 });

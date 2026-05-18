@@ -2,6 +2,16 @@
 
 React Native + Expo mobile app for the Crate P2P beat marketplace.
 
+## Currently Building
+
+| Feature | Status |
+|---|---|
+| Discover feed | Done |
+| Earnings screen | Done |
+| Upload from phone | In Progress |
+| Push notifications on sale | In Progress |
+| App Store / Play Store release | Planned |
+
 ## Stack
 
 - **Expo SDK 53** + Expo Router 5

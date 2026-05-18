@@ -1,226 +1,59 @@
-import { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { useWallet } from "../../src/hooks/useWallet";
-import { colors, spacing, radius, typography } from "../../src/constants/theme";
 
-interface EarningsData {
-  pendingXlm: number;
-  totalEarnedXlm: number;
-  salesCount: number;
-  recentSales: Array<{
-    id: string;
-    sampleTitle: string;
-    buyer: string;
-    amountXlm: number;
-    date: string;
-  }>;
-}
+const MOCK_HISTORY = [
+  { id: "tx1", type: "sale",     amount: "+22.5 XLM", beat: "Midnight Waves", date: "May 10" },
+  { id: "tx2", type: "sale",     amount: "+18.0 XLM", beat: "Block Pressure", date: "May 8"  },
+  { id: "tx3", type: "withdraw", amount: "-40.5 XLM", beat: "Withdrawal",     date: "May 7"  },
+  { id: "tx4", type: "sale",     amount: "+27.0 XLM", beat: "Lagos Summer",   date: "May 3"  },
+];
 
-const DEMO_EARNINGS: EarningsData = {
-  pendingXlm: 45.9,
-  totalEarnedXlm: 234.0,
-  salesCount: 26,
-  recentSales: [
-    { id: "s1", sampleTitle: "Midnight Trap Vol.1", buyer: "GBVK...WKLD", amountXlm: 10.8, date: "2026-05-18" },
-    { id: "s2", sampleTitle: "Lo-Fi Study Session", buyer: "GBLQ...ZQBT", amountXlm: 7.2, date: "2026-05-17" },
-    { id: "s3", sampleTitle: "808 Summer", buyer: "GCLN...WKLD", amountXlm: 13.5, date: "2026-05-16" },
-  ],
-};
-
-export default function EarningsTab() {
-  const { address, isConnected } = useWallet();
-  const [data, setData] = useState<EarningsData | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [withdrawing, setWithdrawing] = useState(false);
-
-  useEffect(() => {
-    if (isConnected && address) {
-      loadEarnings();
-    }
-  }, [isConnected, address]);
-
-  async function loadEarnings() {
-    setLoading(true);
-    try {
-      // In production: call getEarnings(address, address) from the contract
-      await new Promise((r) => setTimeout(r, 600));
-      setData(DEMO_EARNINGS);
-    } catch {
-      Alert.alert("Error", "Failed to load earnings");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function handleWithdraw() {
-    if (!data || data.pendingXlm <= 0) {
-      Alert.alert("No Earnings", "You have no pending earnings to withdraw.");
-      return;
-    }
-    Alert.alert(
-      "Withdraw Earnings",
-      `Withdraw ${data.pendingXlm.toFixed(2)} XLM to your wallet?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Withdraw",
-          onPress: async () => {
-            setWithdrawing(true);
-            try {
-              // In production: call withdrawEarnings(address) + signTransaction + submitTransaction
-              await new Promise((r) => setTimeout(r, 1500));
-              setData((prev) => prev ? { ...prev, pendingXlm: 0 } : prev);
-              Alert.alert("Success", "Earnings withdrawn to your wallet!");
-            } catch {
-              Alert.alert("Error", "Withdrawal failed. Try again.");
-            } finally {
-              setWithdrawing(false);
-            }
-          },
-        },
-      ]
-    );
-  }
-
-  if (!isConnected) {
-    return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emptyIcon}>💰</Text>
-        <Text style={styles.emptyTitle}>Connect Wallet</Text>
-        <Text style={styles.emptyDesc}>
-          Set up your wallet in the Profile tab to track and withdraw earnings.
-        </Text>
-      </View>
-    );
-  }
-
-  if (loading) {
-    return (
-      <View style={styles.emptyContainer}>
-        <ActivityIndicator size="large" color={colors.accent} />
-      </View>
-    );
-  }
+export default function Earnings() {
+  const { address, balance } = useWallet();
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Stats row */}
-      <View style={styles.statsRow}>
-        <View style={[styles.statCard, { flex: 1 }]}>
-          <Text style={styles.statLabel}>Pending Earnings</Text>
-          <Text style={[styles.statValue, { color: data?.pendingXlm ? colors.accent : colors.textMuted }]}>
-            {data?.pendingXlm.toFixed(2) ?? "0.00"}
-          </Text>
-          <Text style={styles.statUnit}>XLM</Text>
-        </View>
-        <View style={[styles.statCard, { flex: 1 }]}>
-          <Text style={styles.statLabel}>Total Earned</Text>
-          <Text style={styles.statValue}>{data?.totalEarnedXlm.toFixed(2) ?? "0.00"}</Text>
-          <Text style={styles.statUnit}>XLM lifetime</Text>
-        </View>
+    <ScrollView style={styles.container}>
+      <Text style={styles.heading}>Earnings</Text>
+
+      {/* Balance card */}
+      <View style={styles.card}>
+        <Text style={styles.label}>Available to withdraw</Text>
+        <Text style={styles.balance}>{address ? `${balance} XLM` : "—"}</Text>
+        <TouchableOpacity style={styles.btn} disabled={!address}>
+          <Text style={styles.btnText}>Withdraw All</Text>
+        </TouchableOpacity>
       </View>
 
-      <View style={styles.statCardWide}>
-        <Text style={styles.statLabel}>Total Sales</Text>
-        <Text style={[styles.statValue, { color: colors.success }]}>{data?.salesCount ?? 0}</Text>
-        <Text style={styles.statUnit}>units sold</Text>
-      </View>
-
-      {/* Withdraw */}
-      <TouchableOpacity
-        style={[
-          styles.withdrawButton,
-          (!data?.pendingXlm || withdrawing) && styles.withdrawButtonDisabled,
-        ]}
-        onPress={handleWithdraw}
-        disabled={!data?.pendingXlm || withdrawing}
-        activeOpacity={0.8}
-      >
-        {withdrawing ? (
-          <ActivityIndicator size="small" color="#000" />
-        ) : (
-          <Text style={styles.withdrawButtonText}>
-            Withdraw {data?.pendingXlm.toFixed(2) ?? "0.00"} XLM
+      {/* History */}
+      <Text style={styles.sectionTitle}>Transaction history</Text>
+      {MOCK_HISTORY.map(tx => (
+        <View key={tx.id} style={styles.row}>
+          <View>
+            <Text style={styles.rowBeat}>{tx.beat}</Text>
+            <Text style={styles.rowDate}>{tx.date}</Text>
+          </View>
+          <Text style={[styles.rowAmount, tx.type === "sale" ? styles.sale : styles.withdraw]}>
+            {tx.amount}
           </Text>
-        )}
-      </TouchableOpacity>
-
-      {/* Recent sales */}
-      {data?.recentSales && data.recentSales.length > 0 && (
-        <View>
-          <Text style={styles.sectionTitle}>Recent Sales</Text>
-          {data.recentSales.map((sale) => (
-            <View key={sale.id} style={styles.saleRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.saleTitle}>{sale.sampleTitle}</Text>
-                <Text style={styles.saleMeta}>{sale.buyer} · {sale.date}</Text>
-              </View>
-              <Text style={styles.saleAmount}>+{sale.amountXlm.toFixed(1)} XLM</Text>
-            </View>
-          ))}
         </View>
-      )}
-
-      <Text style={styles.note}>
-        Revenue split: 90% to you, 10% platform fee — enforced on-chain
-      </Text>
+      ))}
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg },
-  content: { padding: spacing.md, paddingBottom: 100 },
-  emptyContainer: { flex: 1, alignItems: "center", justifyContent: "center", padding: spacing.xl },
-  emptyIcon: { fontSize: 48, marginBottom: spacing.md },
-  emptyTitle: { color: colors.textPrimary, fontSize: typography.fontSizeXL, fontWeight: typography.fontWeightBold, marginBottom: spacing.sm },
-  emptyDesc: { color: colors.textSecondary, fontSize: typography.fontSizeSM, textAlign: "center" },
-  statsRow: { flexDirection: "row", gap: spacing.md, marginBottom: spacing.md },
-  statCard: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-  },
-  statCardWide: {
-    backgroundColor: colors.surface,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: colors.border,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-  },
-  statLabel: { color: colors.textMuted, fontSize: typography.fontSizeXS, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 },
-  statValue: { color: colors.textPrimary, fontSize: 28, fontWeight: typography.fontWeightExtrabold, letterSpacing: -0.5 },
-  statUnit: { color: colors.textSecondary, fontSize: typography.fontSizeXS, marginTop: 2 },
-  withdrawButton: {
-    backgroundColor: colors.accent,
-    paddingVertical: 14,
-    borderRadius: radius.lg,
-    alignItems: "center",
-    marginBottom: spacing.xl,
-  },
-  withdrawButtonDisabled: { opacity: 0.35 },
-  withdrawButtonText: { color: "#000", fontWeight: typography.fontWeightBold, fontSize: typography.fontSizeMD },
-  sectionTitle: { color: colors.textSecondary, fontSize: typography.fontSizeSM, fontWeight: typography.fontWeightSemibold, marginBottom: spacing.md, textTransform: "uppercase", letterSpacing: 0.5 },
-  saleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  saleTitle: { color: colors.textPrimary, fontSize: typography.fontSizeSM, fontWeight: typography.fontWeightMedium },
-  saleMeta: { color: colors.textMuted, fontSize: typography.fontSizeXS, marginTop: 2 },
-  saleAmount: { color: colors.success, fontWeight: typography.fontWeightSemibold, fontSize: typography.fontSizeSM },
-  note: { color: colors.textMuted, fontSize: typography.fontSizeXS, textAlign: "center", marginTop: spacing.xl, lineHeight: 18 },
+  container:    { flex: 1, backgroundColor: "#0a0a0a", padding: 16 },
+  heading:      { fontSize: 24, fontWeight: "800", color: "#fff", marginBottom: 20, letterSpacing: -0.5 },
+  card:         { backgroundColor: "#111", borderRadius: 20, padding: 24, marginBottom: 24, borderWidth: 1, borderColor: "#1a1a1a" },
+  label:        { fontSize: 12, fontWeight: "700", color: "#525252", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 },
+  balance:      { fontSize: 36, fontWeight: "900", color: "#facc15", marginBottom: 20 },
+  btn:          { backgroundColor: "#facc15", borderRadius: 12, padding: 14, alignItems: "center" },
+  btnText:      { fontSize: 15, fontWeight: "700", color: "#000" },
+  sectionTitle: { fontSize: 16, fontWeight: "700", color: "#fff", marginBottom: 12 },
+  row:          { flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 14, backgroundColor: "#111", borderRadius: 12, marginBottom: 8 },
+  rowBeat:      { fontSize: 14, fontWeight: "600", color: "#fff" },
+  rowDate:      { fontSize: 12, color: "#525252", marginTop: 2 },
+  rowAmount:    { fontSize: 14, fontWeight: "700" },
+  sale:         { color: "#facc15" },
+  withdraw:     { color: "#737373" },
 });
