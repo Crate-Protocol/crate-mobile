@@ -12,6 +12,20 @@ const DEMO = [
   { id: "5", title: "Cloud Study",    producer: "GCYZ…SCU", genre: "Lo-Fi",     bpm: 72,  leasePrice: 15  },
 ];
 
+function EmptyState({ search, genre }: { search: string; genre: string }) {
+  return (
+    <View style={styles.emptyState}>
+      <Text style={styles.emptyIcon}>🎵</Text>
+      <Text style={styles.emptyTitle}>No beats found</Text>
+      <Text style={styles.emptySubtitle}>
+        {search
+          ? `No results for "${search}"${genre !== "All" ? ` in ${genre}` : ""}`
+          : `No beats in ${genre} yet`}
+      </Text>
+    </View>
+  );
+}
+
 export default function Discover() {
   const [genre,  setGenre]  = useState("All");
   const [search, setSearch] = useState("");
@@ -31,13 +45,19 @@ export default function Discover() {
         placeholder="Search beats…"
         placeholderTextColor="#525252"
         style={styles.searchInput}
+        accessibilityLabel="Search beats"
       />
 
-      {/* Genre chips */}
       <View style={styles.chips}>
         {GENRES.map(g => (
-          <TouchableOpacity key={g} onPress={() => setGenre(g)}
-            style={[styles.chip, genre === g && styles.chipActive]}>
+          <TouchableOpacity
+            key={g}
+            onPress={() => setGenre(g)}
+            style={[styles.chip, genre === g && styles.chipActive]}
+            accessibilityRole="button"
+            accessibilityLabel={`Filter by ${g}`}
+            accessibilityState={{ selected: genre === g }}
+          >
             <Text style={[styles.chipText, genre === g && styles.chipTextActive]}>{g}</Text>
           </TouchableOpacity>
         ))}
@@ -49,18 +69,23 @@ export default function Discover() {
         showsVerticalScrollIndicator={false}
         renderItem={({ item }) => <SampleCard {...item} />}
         contentContainerStyle={{ paddingBottom: 80 }}
+        ListEmptyComponent={<EmptyState search={search} genre={genre} />}
       />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container:       { flex: 1, backgroundColor: "#0a0a0a", padding: 16 },
-  heading:         { fontSize: 24, fontWeight: "800", color: "#fff", marginBottom: 16, letterSpacing: -0.5 },
-  searchInput:     { backgroundColor: "#111", borderRadius: 12, padding: 12, color: "#fff", fontSize: 14, marginBottom: 12, borderWidth: 1, borderColor: "#1a1a1a" },
-  chips:           { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 16 },
-  chip:            { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7, backgroundColor: "#111", borderWidth: 1, borderColor: "#1a1a1a" },
-  chipActive:      { backgroundColor: "#facc15", borderColor: "#facc15" },
-  chipText:        { fontSize: 12, fontWeight: "700", color: "#525252" },
-  chipTextActive:  { color: "#000" },
+  container:     { flex: 1, backgroundColor: "#0a0a0a", padding: 16 },
+  heading:       { fontSize: 24, fontWeight: "800", color: "#fff", marginBottom: 16, letterSpacing: -0.5 },
+  searchInput:   { backgroundColor: "#111", borderRadius: 12, padding: 12, color: "#fff", fontSize: 14, marginBottom: 12, borderWidth: 1, borderColor: "#1a1a1a" },
+  chips:         { flexDirection: "row", flexWrap: "wrap", gap: 6, marginBottom: 16 },
+  chip:          { borderRadius: 999, paddingHorizontal: 14, paddingVertical: 7, backgroundColor: "#111", borderWidth: 1, borderColor: "#1a1a1a" },
+  chipActive:    { backgroundColor: "#facc15", borderColor: "#facc15" },
+  chipText:      { fontSize: 12, fontWeight: "700", color: "#525252" },
+  chipTextActive: { color: "#000" },
+  emptyState:    { alignItems: "center", paddingTop: 60 },
+  emptyIcon:     { fontSize: 40, marginBottom: 12 },
+  emptyTitle:    { fontSize: 16, fontWeight: "700", color: "#f5f5f5", marginBottom: 6 },
+  emptySubtitle: { fontSize: 13, color: "#525252", textAlign: "center", paddingHorizontal: 20 },
 });

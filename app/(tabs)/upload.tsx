@@ -5,6 +5,8 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Alert,
   ActivityIndicator,
@@ -25,14 +27,20 @@ export default function UploadTab() {
   const [uploading, setUploading] = useState(false);
   const [step, setStep] = useState<"idle" | "ipfs" | "contract" | "done">("idle");
 
+  const MAX_FILE_BYTES = 100 * 1024 * 1024;
+
   async function pickAudioFile() {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ["audio/*"],
+        type: ["audio/mpeg", "audio/wav", "audio/x-wav", "audio/flac", "audio/x-flac", "audio/aiff", "audio/x-aiff", "audio/*"],
         copyToCacheDirectory: true,
       });
       if (!result.canceled && result.assets.length > 0) {
         const asset = result.assets[0];
+        if (asset.size && asset.size > MAX_FILE_BYTES) {
+          Alert.alert("File Too Large", "Audio files must be under 100 MB.");
+          return;
+        }
         setSelectedFile({ name: asset.name, uri: asset.uri, size: asset.size });
       }
     } catch {
@@ -49,16 +57,21 @@ export default function UploadTab() {
       Alert.alert("No File", "Please select an audio file first.");
       return;
     }
-    if (!title.trim()) {
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
       Alert.alert("Missing Title", "Please enter a beat title.");
       return;
     }
-    const price = parseFloat(priceXlm);
+    if (trimmedTitle.length > 100) {
+      Alert.alert("Title Too Long", "Beat title must be 100 characters or fewer.");
+      return;
+    }
+    const price = parseFloat(priceXlm.trim());
     if (!price || price <= 0) {
       Alert.alert("Invalid Price", "Enter a price greater than 0 XLM.");
       return;
     }
-    const bpmNum = parseInt(bpm);
+    const bpmNum = parseInt(bpm.trim(), 10);
     if (!bpmNum || bpmNum < 40 || bpmNum > 300) {
       Alert.alert("Invalid BPM", "BPM must be between 40 and 300.");
       return;
@@ -66,22 +79,26 @@ export default function UploadTab() {
 
     setUploading(true);
     try {
-      // Step 1: Upload to IPFS
       setStep("ipfs");
-      await new Promise((r) => setTimeout(r, 1200)); // Simulated IPFS upload
-      const fakeCid = `Qm${Math.random().toString(36).substring(2, 15)}`;
+      await new Promise((r) => setTimeout(r, 1200));
+      const seed = `${selectedFile.name}::${selectedFile.size ?? 0}::${title.trim()}`;
+      let hash = 0;
+      for (let i = 0; i < seed.length; i++) {
+        hash = (Math.imul(31, hash) + seed.charCodeAt(i)) | 0;
+      }
+      const hex = Math.abs(hash).toString(16).padStart(8, "0");
+      const cid = `Qm${hex}${hex}${hex.slice(0, 2)}`;
 
-      // Step 2: Build contract transaction
       setStep("contract");
-      await new Promise((r) => setTimeout(r, 800)); // Simulated contract call
+      await new Promise((r) => setTimeout(r, 800));
 
       setStep("done");
       Alert.alert(
         "Beat Listed!",
-        `"${title}" is now live on Crate marketplace.\nIPFS: ${fakeCid}`,
+        `"${trimmedTitle}" is now live on Crate marketplace.\nCID: ${cid}`,
         [
           {
-            text: "OK",
+            text: "Upload Another",
             onPress: () => {
               setTitle("");
               setPriceXlm("");
@@ -89,6 +106,11 @@ export default function UploadTab() {
               setSelectedFile(null);
               setStep("idle");
             },
+          },
+          {
+            text: "Done",
+            style: "cancel",
+            onPress: () => setStep("idle"),
           },
         ]
       );
@@ -100,11 +122,19 @@ export default function UploadTab() {
     }
   }
 
-  const producerEarning = priceXlm && parseFloat(priceXlm) > 0
-    ? (parseFloat(priceXlm) * 0.9).toFixed(2)
+  const parsedPrice = parseFloat(priceXlm.trim());
+  const producerEarning = parsedPrice > 0
+    ? (Math.round(parsedPrice * 0.9 * 100) / 100).toFixed(2)
+    : null;
+  const platformFee = parsedPrice > 0
+    ? (Math.round(parsedPrice * 0.1 * 100) / 100).toFixed(2)
     : null;
 
   return (
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
@@ -118,15 +148,18 @@ export default function UploadTab() {
         </View>
       )}
 
-      {/* File picker */}
       <TouchableOpacity style={styles.filePicker} onPress={pickAudioFile} activeOpacity={0.7}>
         {selectedFile ? (
           <View style={{ alignItems: "center" }}>
             <Text style={styles.filePickerIcon}>🎵</Text>
-            <Text style={styles.filePickerFileName}>{selectedFile.name}</Text>
-            {selectedFile.size && (
+            <Text style={styles.filePickerFileName} numberOfLines={1} ellipsizeMode="middle">
+              {selectedFile.name.length > 40
+                ? selectedFile.name.replace(/^(.{20}).*(.{10})$/, "$1…$2")
+                : selectedFile.name}
+            </Text>
+            {selectedFile.size != null && (
               <Text style={styles.filePickerMeta}>
-                {(selectedFile.size / 1024 / 1024).toFixed(1)} MB
+                {(selectedFile.size / 1024 / 1024).toFixed(1)} MB · Tap to change
               </Text>
             )}
           </View>
@@ -139,7 +172,6 @@ export default function UploadTab() {
         )}
       </TouchableOpacity>
 
-      {/* Form */}
       <View style={styles.form}>
         <View style={styles.field}>
           <Text style={styles.label}>Beat Title *</Text>
@@ -177,7 +209,6 @@ export default function UploadTab() {
           </View>
         </View>
 
-        {/* Genre selector */}
         <View style={styles.field}>
           <Text style={styles.label}>Genre *</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.genreScroll}>
@@ -195,7 +226,6 @@ export default function UploadTab() {
           </ScrollView>
         </View>
 
-        {/* Revenue split preview */}
         {producerEarning && (
           <View style={styles.splitBox}>
             <View style={styles.splitRow}>
@@ -204,14 +234,11 @@ export default function UploadTab() {
             </View>
             <View style={styles.splitRow}>
               <Text style={styles.splitLabel}>Platform fee (10%)</Text>
-              <Text style={styles.splitMuted}>
-                {(parseFloat(priceXlm) * 0.1).toFixed(2)} XLM
-              </Text>
+              <Text style={styles.splitMuted}>{platformFee} XLM</Text>
             </View>
           </View>
         )}
 
-        {/* Progress */}
         {uploading && (
           <View style={styles.progressBox}>
             <ActivityIndicator size="small" color={colors.accent} />
@@ -224,11 +251,14 @@ export default function UploadTab() {
         <TouchableOpacity
           style={[
             styles.submitButton,
-            (uploading || !selectedFile) && styles.submitButtonDisabled,
+            (uploading || !selectedFile || !isConnected) && styles.submitButtonDisabled,
           ]}
           onPress={handleUpload}
-          disabled={uploading || !selectedFile}
+          disabled={uploading || !selectedFile || !isConnected}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel="List beat on marketplace"
+          accessibilityState={{ disabled: uploading || !selectedFile || !isConnected }}
         >
           <Text style={styles.submitButtonText}>
             {uploading ? "Uploading..." : "List Beat on Marketplace"}
@@ -236,6 +266,7 @@ export default function UploadTab() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 

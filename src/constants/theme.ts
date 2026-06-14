@@ -1,8 +1,3 @@
-/**
- * Crate Mobile — Design Tokens
- * Matches the web design system exactly.
- */
-
 export const colors = {
   bg: "#0a0a0a",
   surface: "#111111",
@@ -47,42 +42,3 @@ export const typography = {
   fontWeightExtrabold: "800" as const,
 };
 
-// 1: feat: scaffold Expo 53 project with Expo Router an
-
-// 2: feat: set up bottom tab navigation with four scree
-
-// 3: feat: implement dark theme tokens matching web app
-
-// 4: feat: build Discover feed with SampleCard componen
-
-// 5: feat: implement wallet keypair generation with sec
-
-// 6: feat: add Earnings screen with live Soroban balanc
-
-// 7: feat: implement Upload screen with expo-document-p
-
-// 8: fix: resolve Android secure store keypair retrieva
-
-// 9: feat: add WaveformBars decorative audio visualizat
-
-// 10: feat: implement one-tap withdraw on Earnings scree
-
-// 11: feat: add push notification on beat sale via expo-
-
-// 12: fix: handle expired Stellar keypair session on app
-
-// 13: feat: add genre and BPM filter chips to Discover s
-
-// 14: feat: implement Profile screen with listed beats a
-
-// 15: fix: correct XLM balance display on low-digit amou
-
-// 16: feat: add 30-second beat preview with expo-av
-
-// 17: refactor: extract reusable PriceTag component
-
-// 18: feat: add haptic feedback on purchase confirmation
-
-// 19: fix: resolve iOS safe area insets on notch devices
-
-// 20: chore: update README, app.json scheme, and .env.ex

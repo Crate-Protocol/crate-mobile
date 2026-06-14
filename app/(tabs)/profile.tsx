@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
   Alert,
   ActivityIndicator,
 } from "react-native";
@@ -16,12 +18,14 @@ import { colors, spacing, radius, typography } from "../../src/constants/theme";
 export default function ProfileTab() {
   const {
     address,
+    balance,
     isConnected,
     isLoading,
     connect,
     disconnect,
     generateWallet,
     importWallet,
+    refreshBalance,
   } = useWallet();
 
   const [importSecret, setImportSecret] = useState("");
@@ -29,11 +33,13 @@ export default function ProfileTab() {
   const [importing, setImporting] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [secretVisible, setSecretVisible] = useState(false);
   const [newWalletSecret, setNewWalletSecret] = useState<string | null>(null);
+  const copyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     connect();
-  }, []);
+  }, [connect]);
 
   async function handleGenerate() {
     Alert.alert(
@@ -45,15 +51,12 @@ export default function ProfileTab() {
           text: "Generate",
           onPress: async () => {
             setGenerating(true);
+            setNewWalletSecret(null);
             try {
               const result = await generateWallet();
               setNewWalletSecret(result.secretKey);
-              Alert.alert(
-                "Wallet Created",
-                `Address: ${result.address}\n\nSave your secret key (shown below). This is your only chance.`
-              );
             } catch {
-              Alert.alert("Error", "Failed to generate wallet");
+              Alert.alert("Error", "Failed to generate wallet. Please try again.");
             } finally {
               setGenerating(false);
             }
@@ -83,9 +86,17 @@ export default function ProfileTab() {
 
   async function copyAddress() {
     if (!address) return;
-    await Clipboard.setStringAsync(address);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await Clipboard.setStringAsync(address);
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      setCopied(true);
+      copyTimeoutRef.current = setTimeout(() => {
+        setCopied(false);
+        copyTimeoutRef.current = null;
+      }, 2000);
+    } catch {
+      Alert.alert("Address", address, [{ text: "Close" }]);
+    }
   }
 
   async function handleDisconnect() {
@@ -113,6 +124,10 @@ export default function ProfileTab() {
 
   if (!isConnected) {
     return (
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+      >
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
         <View style={styles.logoSection}>
           <Text style={styles.logo}>◈ Crate</Text>
@@ -143,15 +158,23 @@ export default function ProfileTab() {
         {showImport && (
           <View style={styles.importBox}>
             <Text style={styles.importLabel}>Enter your Stellar secret key (S...)</Text>
-            <TextInput
-              style={[styles.input, styles.secretInput]}
-              placeholder="SXXXXXX..."
-              placeholderTextColor={colors.textMuted}
-              value={importSecret}
-              onChangeText={setImportSecret}
-              secureTextEntry
-              autoCapitalize="characters"
-            />
+            <View style={{ position: "relative" }}>
+              <TextInput
+                style={[styles.input, styles.secretInput]}
+                placeholder="SXXXXXX..."
+                placeholderTextColor={colors.textMuted}
+                value={importSecret}
+                onChangeText={setImportSecret}
+                secureTextEntry={!secretVisible}
+                autoCapitalize="characters"
+              />
+              <TouchableOpacity
+                style={styles.toggleVisibility}
+                onPress={() => setSecretVisible(v => !v)}
+              >
+                <Text style={styles.toggleVisibilityText}>{secretVisible ? "Hide" : "Show"}</Text>
+              </TouchableOpacity>
+            </View>
             <TouchableOpacity
               style={[styles.primaryButton, { marginTop: 12 }]}
               onPress={handleImport}
@@ -171,12 +194,17 @@ export default function ProfileTab() {
           For testnet use only. Never use real funds on testnet.
         </Text>
       </ScrollView>
+      </KeyboardAvoidingView>
     );
   }
 
+  const contractId = process.env.EXPO_PUBLIC_CONTRACT_ID as string | undefined;
+  const contractDisplay = contractId
+    ? `${contractId.slice(0, 8)}…${contractId.slice(-4)}`
+    : "Not configured";
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      {/* Address card */}
       <View style={styles.addressCard}>
         <View style={styles.addressHeader}>
           <View style={styles.connectedDot} />
@@ -184,12 +212,18 @@ export default function ProfileTab() {
           <Text style={styles.networkBadge}>Testnet</Text>
         </View>
         <Text style={styles.address}>{address}</Text>
+        <View style={styles.balanceRow}>
+          <Text style={styles.balanceLabel}>Balance</Text>
+          <Text style={styles.balanceValue}>{balance} XLM</Text>
+          <TouchableOpacity onPress={refreshBalance} style={styles.refreshBtn}>
+            <Text style={styles.refreshBtnText}>↻</Text>
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity style={styles.copyButton} onPress={copyAddress}>
           <Text style={styles.copyButtonText}>{copied ? "Copied!" : "Copy Address"}</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Show new wallet secret once */}
       {newWalletSecret && (
         <View style={styles.secretBox}>
           <Text style={styles.secretWarning}>Save this secret key — it won't be shown again</Text>
@@ -208,10 +242,9 @@ export default function ProfileTab() {
         </View>
       )}
 
-      {/* Contract info */}
       <View style={styles.infoCard}>
         <Text style={styles.infoLabel}>CONTRACT</Text>
-        <Text style={styles.infoValue}>CA7DGEWW...DTLG</Text>
+        <Text style={styles.infoValue}>{contractDisplay}</Text>
         <View style={styles.infoDivider} />
         <Text style={styles.infoLabel}>REVENUE SPLIT</Text>
         <Text style={[styles.infoValue, { color: colors.accent }]}>90% Producers · 10% Platform</Text>
@@ -220,7 +253,6 @@ export default function ProfileTab() {
         <Text style={[styles.infoValue, { color: colors.success }]}>Under 5 seconds</Text>
       </View>
 
-      {/* Fund testnet wallet */}
       <TouchableOpacity
         style={styles.friendbotButton}
         onPress={() => {
@@ -235,7 +267,6 @@ export default function ProfileTab() {
         <Text style={styles.friendbotText}>Fund with Testnet XLM</Text>
       </TouchableOpacity>
 
-      {/* Disconnect */}
       <TouchableOpacity
         style={styles.disconnectButton}
         onPress={handleDisconnect}
@@ -291,7 +322,9 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     fontSize: typography.fontSizeSM,
   },
-  secretInput: { fontFamily: "monospace" },
+  secretInput: { fontFamily: "monospace", paddingRight: 56 },
+  toggleVisibility: { position: "absolute", right: spacing.md, top: 0, bottom: 0, justifyContent: "center" },
+  toggleVisibilityText: { color: colors.accent, fontSize: typography.fontSizeXS, fontWeight: typography.fontWeightSemibold },
   disclaimer: { color: colors.textMuted, fontSize: typography.fontSizeXS, textAlign: "center", marginTop: spacing.xl, lineHeight: 18 },
   addressCard: {
     backgroundColor: colors.surface,
@@ -317,6 +350,20 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   address: { color: colors.textPrimary, fontSize: 11, fontFamily: "monospace", marginBottom: spacing.md, lineHeight: 16 },
+  balanceRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+    backgroundColor: colors.surface2,
+    borderRadius: radius.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: 10,
+  },
+  balanceLabel: { color: colors.textMuted, fontSize: typography.fontSizeXS, flex: 1 },
+  balanceValue: { color: colors.accent, fontSize: typography.fontSizeMD, fontWeight: typography.fontWeightBold },
+  refreshBtn:     { padding: 4 },
+  refreshBtnText: { color: colors.textMuted, fontSize: 16 },
   copyButton: {
     borderWidth: 1,
     borderColor: colors.border,
